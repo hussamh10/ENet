@@ -4,13 +4,23 @@ import numpy as np
 from keras.models import *
 from keras.layers import Input, merge, Conv2D, MaxPooling2D, UpSampling2D, Dropout, Cropping2D
 from keras.optimizers import *
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler, TensorBoard
 from keras import backend as keras
-from data import *
 
 from hussam_data import getData
 
+def dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+
+def dice_coef_loss(y_true, y_pred):
+    return -dice_coef(y_true, y_pred)
+
 class myUnet(object):
+
 
         def __init__(self, img_rows, img_cols):
 
@@ -18,14 +28,14 @@ class myUnet(object):
                 self.img_cols = img_cols
 
         def load_data(self):
-                imgs_train, labels_train = getData(20)
-                imgs_test, labels_test = getData(200, start = 190)
+                imgs_train, labels_train = getData(2)
+                imgs_test, labels_test = getData(200, start = 198)
 
-                return imgs_train, labels_train, imgs_test
+                return imgs_train, labels_train, imgs_test, labels_test
 
         def get_unet(self):
 
-                inputs = Input((self.img_rows, self.img_cols,1))
+                inputs = Input((self.img_rows, self.img_cols,2))
 
                 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
                 print ("conv1 shape:",conv1.shape)
@@ -81,30 +91,28 @@ class myUnet(object):
 
                 model = Model(input = inputs, output = conv10)
 
-                model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+                #model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+                model.compile(optimizer = 'adam', loss = dice_coef_loss, metrics = ['accuracy'])
 
                 return model
 
 
         def train(self):
-                keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, 
+                TensorBoard(log_dir='./Graph', histogram_freq=0, 
                         write_graph=True, write_images=True)
 
-                tbCallBack = keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
+                tbCallBack = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
-                print("loading data")
-                imgs_train, imgs_mask_train, imgs_test = self.load_data()
-                print("loading data done")
+                imgs_train, imgs_mask_train, imgs_test, labels_test = self.load_data()
                 model = self.get_unet()
-                print("got unet")
 
-                model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss',verbose=1, save_best_only=True)
-                print('Fitting model...')
-                model.fit(imgs_train, imgs_mask_train, batch_size=4, nb_epoch=10, verbose=1,validation_split=0.2, shuffle=True, callbacks=[model_checkpoint, tbCallBack])
+                #model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss',verbose=1, save_best_only=True)
+
+                model.fit(imgs_train, imgs_mask_train, batch_size=2, epochs=10, verbose=1,validation_split=0.2, shuffle=True, callbacks=[tbCallBack])
 
                 print('predict test data')
                 imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=1)
-                np.save('../results/imgs_mask_test.npy', imgs_mask_test)
+                np.save('imgs_mask_test.npy', imgs_mask_test)
 
         def save_img(self):
 
@@ -120,5 +128,6 @@ class myUnet(object):
 
 if __name__ == '__main__':
         myunet = myUnet(224, 224)
+
         myunet.train()
         myunet.save_img()

@@ -7,7 +7,6 @@ import cv2
 size = 20
 
 def getImage(i, source):
-    #i = (i%10) + 1
     name = str(i) + '.jpg'
     print('data\\' + source + '\\' + name)
     img = imread('data\\' + source + '\\' + name, 0)
@@ -17,16 +16,20 @@ def getImage(i, source):
     return img
 
 def getData(end, start=0):
-    img_src = 'img'
-    label_src = 'label'
+    img_src = 'images'
 
     imgs = []
     labels = []
 
     for i in range(start, end):
-        i+=1 #off by one
-        imgs.append(getImage(i, img_src))
-        labels.append(getImage(i, label_src))
+        image1 = getImage(i, img_src)
+        image2 = getImage(i, img_src)
+        image1 = image1.reshape((224, 224, 1))
+        image2 = image2.reshape((224, 224, 1))
+        image = np.concatenate([image1, image2], axis=2)
+
+        imgs.append(image)
+        labels.append(getImage(i, img_src))
         
     imgs = np.array(imgs)
     labels = np.array(labels)
