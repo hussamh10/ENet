@@ -9,16 +9,6 @@ from keras import backend as keras
 
 from hussam_data import getData
 
-def dice_coef(y_true, y_pred):
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
-
-def dice_coef_loss(y_true, y_pred):
-    return -dice_coef(y_true, y_pred)
-
 class myUnet(object):
 
 
@@ -91,9 +81,7 @@ class myUnet(object):
 
                 model = Model(input = inputs, output = conv10)
 
-                #model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-                model.compile(optimizer = 'adam', loss = dice_coef_loss, metrics = ['accuracy'])
-
+                model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
                 return model
 
 
@@ -125,6 +113,10 @@ class myUnet(object):
 
 
 
+
+def get_unet():
+        myunet = myUnet(224, 224)
+        return myunet.get_unet()
 
 if __name__ == '__main__':
         myunet = myUnet(224, 224)

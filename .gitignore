@@ -1,3 +1,6 @@
 /data
 *.swp
+*.hdf5
 *.swo
+/__pycache__
+/out
