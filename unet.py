@@ -7,7 +7,7 @@ from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, TensorBoard
 from keras import backend as keras
 
-from hussam_data import getData
+from generator import generate
 
 class myUnet(object):
 
@@ -17,16 +17,8 @@ class myUnet(object):
                 self.img_rows = img_rows
                 self.img_cols = img_cols
 
-        def load_data(self):
-                imgs_train, labels_train = getData(2)
-                imgs_test, labels_test = getData(200, start = 198)
-
-                return imgs_train, labels_train, imgs_test, labels_test
-
         def get_unet(self):
-
                 inputs = Input((self.img_rows, self.img_cols,2))
-
                 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
                 print ("conv1 shape:",conv1.shape)
                 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -91,27 +83,13 @@ class myUnet(object):
 
                 tbCallBack = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
-                imgs_train, imgs_mask_train, imgs_test, labels_test = self.load_data()
                 model = self.get_unet()
-
-                #model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss',verbose=1, save_best_only=True)
-
-                model.fit(imgs_train, imgs_mask_train, batch_size=2, epochs=10, verbose=1,validation_split=0.2, shuffle=True, callbacks=[tbCallBack])
+                model_checkpoint = ModelCheckpoint('enet.hdf5', monitor='loss',verbose=1, save_best_only=True)
+                model.fit_generator(generate(100), steps_per_epoch=1, epochs=400, verbose=1, callbacks=[model_checkpoint, tbCallBack])
 
                 print('predict test data')
                 imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=1)
                 np.save('imgs_mask_test.npy', imgs_mask_test)
-
-        def save_img(self):
-
-                print("array to image")
-                imgs = np.load('imgs_mask_test.npy')
-                for i in range(imgs.shape[0]):
-                        img = imgs[i]
-                        img = array_to_img(img)
-                        img.save("../results/%d.jpg"%(i))
-
-
 
 
 def get_unet():
@@ -122,4 +100,3 @@ if __name__ == '__main__':
         myunet = myUnet(224, 224)
 
         myunet.train()
-        myunet.save_img()

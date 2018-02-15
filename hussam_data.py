@@ -25,7 +25,7 @@ def getData(end, start=0):
 
     return inputs, labels
 
-def getUnetData(end, start=0, dir='data\\'): #data/unet/imgs/1.jpg
+def getUnetData(end, start=0, dir='data\\unet\\'): #data/unet/imgs/1.jpg
     imgs = []
     img_src1 = 'imgs\\1'
     img_src2 = 'imgs\\2'
@@ -42,7 +42,7 @@ def getUnetData(end, start=0, dir='data\\'): #data/unet/imgs/1.jpg
     imgs = np.array(imgs)
     return imgs
 
-def getLabels(end, start=0, dir='data\\'): #data/ynet/labels
+def getLabels(end, start=0, dir='data\\ynet\\'): #data/ynet/labels
     labels = []
     label_src = 'labels'
 
