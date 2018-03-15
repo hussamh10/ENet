@@ -6,7 +6,7 @@ import cv2
 
 def getImage(i, source, main_dir, ext, size):
     name = str(i) + ext
-    print(main_dir + source + '\\' + name)
+    print(main_dir + source + '/' + name)
 
     path = os.path.join(main_dir, source , name)
     img = imread(path, 0)
