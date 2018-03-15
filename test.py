@@ -1,23 +1,12 @@
-import tensorflow as tf
-import cv2 as cv
-import numpy as np
-import hussam_data as data
 from matplotlib import pyplot as plt
+import generator as gen
 
-u, l = data.getData(2, start=1)
+g = gen.generate(10)
 
-u = u.reshape((224, 224, 2))
+print(next(g))
 
-print(u.shape)
-
-
-print(u[:,:,1].shape)
-
-plt.imshow(u[:,:,0])
-
-plt.savefig('out\\' + '1.jpg')
-
-plt.imshow(u[:,:,1])
-
-plt.savefig('out\\' + '2.jpg')
-
+x1_2, x3 = next(g)
+x3 = x3.reshape(x3.shape[1], x3.shape[2])
+print(x3.shape)
+plt.imshow(x3)
+plt.show()

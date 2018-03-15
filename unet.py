@@ -5,7 +5,8 @@ from keras.models import *
 from keras.layers import Input, merge, Conv2D, MaxPooling2D, UpSampling2D, Dropout, Cropping2D
 from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, TensorBoard
-from keras import backend as keras
+from keras import backend as keras 
+from time import time
 
 from generator import generate
 
@@ -78,19 +79,16 @@ class myUnet(object):
 
 
         def train(self):
+                t = time()
                 TensorBoard(log_dir='./Graph', histogram_freq=0, 
                         write_graph=True, write_images=True)
 
                 tbCallBack = TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
                 model = self.get_unet()
-                model_checkpoint = ModelCheckpoint('enet.hdf5', monitor='loss',verbose=1, save_best_only=True)
-                model.fit_generator(generate(100), steps_per_epoch=1, epochs=400, verbose=1, callbacks=[model_checkpoint, tbCallBack])
-
-                print('predict test data')
-                imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=1)
-                np.save('imgs_mask_test.npy', imgs_mask_test)
-
+                checkpoint = 'enet_' + str(t) + 'hdf5'
+                model_checkpoint = ModelCheckpoint(checkpoint, monitor='loss',verbose=1, save_best_only=True)
+                model.fit_generator(generate(100, 6), steps_per_epoch=30, epochs=2000, verbose=1, callbacks=[model_checkpoint, tbCallBack])
 
 def get_unet():
         myunet = myUnet(224, 224)
@@ -98,5 +96,4 @@ def get_unet():
 
 if __name__ == '__main__':
         myunet = myUnet(224, 224)
-
         myunet.train()

@@ -2,6 +2,8 @@
 *.swp
 *.hdf5
 *.swo
+*.txt
+*.npy
 /__pycache__
 /out
 /*/

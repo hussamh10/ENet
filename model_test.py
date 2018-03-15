@@ -6,24 +6,25 @@ import keras
 
 def test(start):
     md = get_unet()
-    md.load_weights('fcnet.hdf5')
+    md.load_weights('enet_14_3.hdf5')
 
-    h, hy = gd(start = start, end = start + 10)
+    h, hy = gd(start = start, end = start + 10, folder='_ (11)')
 
-    del hy
-    
     print("predicting")
 
     hp = md.predict(h)
 
     i = start
-    for p in hp:
-        plt.imshow(p.reshape((224, 224)))
+    for p, gt in zip(hp, hy):
+        plt.imshow(p.reshape((224, 224)), cmap='gray')
         plt.savefig('' + 'out\\' + str(i) + '.png')
+
+        plt.imshow(gt.reshape((224, 224)), cmap='gray')
+        plt.savefig('' + 'out\\gt' + str(i) + '.png')
+
         print(''  + 'out\\' + str(i) + '.png')
         i += 1
 
     print("Done")
 
-for i in range(311, 400, 10):
-    test(i)
+test(1)
